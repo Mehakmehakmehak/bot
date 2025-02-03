@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Stir Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-container {
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+        }
+        #chat-header {
+            background: #ff5722;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #chat-body {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .chat-question {
+            background: #e0e0e0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .chat-options button, .chat-options select, .chat-options input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-options button {
+            background: #ff5722;
+            color: white;
+        }
+        .chat-options button:hover {
+            background: #e64a19;
+        }
+        .chat-options select {
+            background: white;
+            border: 1px solid #ccc;
+        }
+        #start-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+        #start-button img {
+            width: 60px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Chatbot Start Button with Logo -->
+    <button id="start-button">
+        <img src="https://your-logo-url.com/chatbot-icon.png" alt="Chatbot">
+    </button>
+
+    <!-- Chatbot Container -->
+    <div id="chat-container">
+        <div id="chat-header">👩‍🍳 The Stir Chatbot</div>
+        <div id="chat-body"></div>
+    </div>
+
+    <script>
+        document.getElementById("start-button").addEventListener("click", function() {
+            document.getElementById("chat-container").style.display = "flex";
+            document.getElementById("start-button").style.display = "none";
+            startChat();
+        });
+
+        function startChat() {
+            let chatBody = document.getElementById("chat-body");
+            chatBody.innerHTML = ""; // Clear chat
+
+            let questions = [
+                {
+                    text: "What are you interested in?",
+                    type: "buttons",
+                    options: ["Renting the kitchen", "Business mentorship", "Becoming a Stir Maker"]
+                },
+                {
+                    text: "Would you like to browse our product catalogue?",
+                    type: "yesno"
+                },
+                {
+                    text: "What type of food business are you starting?",
+                    type: "dropdown",
+                    options: ["Baking", "Catering", "Meal prep", "Restaurant"]
+                },
+                {
+                    text: "What services do you need help with?",
+                    type: "checkbox",
+                    options: ["Marketing", "Financing", "Business planning"]
+                },
+                {
+                    text: "Please provide your name:",
+                    type: "text"
+                },
+                {
+                    text: "Please provide your email address:",
+                    type: "email"
+                }
+            ];
+
+            let index = 0;
+
+            function showNextQuestion() {
+                if (index >= questions.length) {
+                    chatBody.innerHTML += `<div class="chat-question">🎉 Thank you! We'll contact you soon.</div>`;
+                    return;
+                }
+
+                let q = questions[index];
+                let qDiv = document.createElement("div");
+                qDiv.className = "chat-question";
+                qDiv.innerHTML = `<strong>${q.text}</strong><div class="chat-options"></div>`;
+                chatBody.appendChild(qDiv);
+                let optionsDiv = qDiv.querySelector(".chat-options");
+
+                // Clear previous options
+                optionsDiv.innerHTML = '';
+
+                if (q.type === "buttons") {
+                    q.options.forEach(option => {
+                        let btn = document.createElement("button");
+                        btn.innerText = option;
+                        btn.onclick = function() {
+                            qDiv.innerHTML += `<br><em>You selected: ${option}</em>`;
+                            index++;
+                            setTimeout(showNextQuestion, 1000);
+                        };
+                        optionsDiv.appendChild(btn);
+                    });
+                } else if (q.type === "yesno") {
+                    ["Yes", "No"].forEach(option => {
+                        let btn = document.createElement("button");
+                        btn.innerText = option;
+                        btn.onclick = function() {
+                            qDiv.innerHTML += `<br><em>You selected: ${option}</em>`;
+                            index++;
+                            setTimeout(showNextQuestion, 1000);
+                        };
+                        optionsDiv.appendChild(btn);
+                    });
+                } else if (q.type === "dropdown") {
+                    let select = document.createElement("select");
+                    q.options.forEach(option => {
+                        let opt = document.createElement("option");
+                        opt.value = option;
+                        opt.innerText = option;
+                        select.appendChild(opt);
+                    });
+                    select.onchange = function() {
+                        qDiv.innerHTML += `<br><em>You selected: ${select.value}</em>`;
+                        index++;
+                        setTimeout(showNextQuestion, 1000);
+                    };
+                    optionsDiv.appendChild(select);
+                } else if (q.type === "checkbox") {
+                    q.options.forEach(option => {
+                        let label = document.createElement("label");
+                        let checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.value = option;
+                        label.appendChild(checkbox);
+                        label.innerHTML += " " + option + "<br>";
+                        optionsDiv.appendChild(label);
+                    });
+                    let submitBtn = document.createElement("button");
+                    submitBtn.innerText = "Submit";
+                    submitBtn.onclick = function() {
+                        let selected = [];
+                        optionsDiv.querySelectorAll("input:checked").forEach(cb => selected.push(cb.value));
+                        qDiv.innerHTML += `<br><em>You selected: ${selected.join(", ")}</em>`;
+                        index++;
+                        setTimeout(showNextQuestion, 1000);
+                    };
+                    optionsDiv.appendChild(submitBtn);
+                } else if (q.type === "text" || q.type === "email") {
+                    let inputField = document.createElement("input");
+                    inputField.type = q.type;
+                    inputField.placeholder = q.type === "text" ? "Enter your name" : "Enter your email address";
+                    inputField.onchange = function() {
+                        qDiv.innerHTML += `<br><em>You entered: ${inputField.value}</em>`;
+                        index++;
+                        setTimeout(showNextQuestion, 1000);
+                    };
+                    optionsDiv.appendChild(inputField);
+                }
+            }
+
+            showNextQuestion();
+        }
+    </script>
+
+</body>
+</html>
